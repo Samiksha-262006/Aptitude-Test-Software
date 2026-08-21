@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aptitude Test Software - Mini Project (JIRA Task JTM-17). Featuring 20 MCQs in Quantitative, Logical, and Verbal reasoning with student authentication, attempt history, score progression comparison, live timer, and printable certificate.">
+    <meta name="author" content="Samiksha">
+    <title>AptitudePro – Online Aptitude Test & Evaluation System</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Ambient Gradient Glow Background -->
+    <div class="ambient-glow"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-brand" onclick="location.reload()">
+            <div class="brand-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="brand-text">
+                <h1>AptitudePro <span class="badge">JTM-17</span></h1>
+            </div>
+        </div>
+
+        <div class="nav-actions">
+            <div id="navUserBadge" class="user-nav-badge">
+                <i class="fas fa-user-circle user-badge-icon"></i>
+                <span id="navUserName" class="nav-user-name">Student</span>
+                <button id="navLogoutBtn" class="nav-logout-btn" title="Log out of student account" aria-label="Log out">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+
+            <button id="navLeaderboardBtn" class="icon-btn" title="View Competition Leaderboard" aria-label="Leaderboard">
+                <i class="fas fa-trophy" style="color: #fbbf24;"></i>
+            </button>
+            <button id="soundToggleBtn" class="icon-btn" title="Toggle Sound Effects" aria-label="Sound Toggle">
+                <i id="soundIcon" class="fas fa-volume-up"></i>
+            </button>
+            <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme (Dark / Light)" aria-label="Theme Toggle">
+                <i id="themeIcon" class="fas fa-sun"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ===================================================================
+             VIEW 1: AUTHENTICATION (LOGIN & REGISTRATION)
+             =================================================================== -->
+        <section id="authView" class="view-section active">
+            <div class="auth-layout">
+                <div class="hero-content">
+                    <h2>Elevate Your <span class="gradient-text">Aptitude Score</span> & Track Growth</h2>
+                    <p class="hero-description">
+                        An intelligent assessment and analytics platform. Register or log in to take dynamic 20-question tests, compare scores with your previous attempts, inspect full test histories, and earn verified certificates!
+                    </p>
+
+                    <div class="feature-pills">
+                        <div class="pill"><span class="emoji">🔐</span> Student Accounts</div>
+                        <div class="pill"><span class="emoji">📈</span> Score Comparison</div>
+                        <div class="pill"><span class="emoji">⏱️</span> 20-Min Timer</div>
+                        <div class="pill"><span class="emoji">🎲</span> Randomized MCQs</div>
+                        <div class="pill"><span class="emoji">📜</span> PDF Certificate</div>
+                        <div class="pill"><span class="emoji">🏆</span> Hall of Fame</div>
+                    </div>
+                </div>
+
+                <div class="registration-form-card">
+                    <div class="glass-card">
+                        <!-- Login / Register Switcher Tabs -->
+                        <div class="auth-tabs">
+                            <button id="tabLoginBtn" class="auth-tab-btn active">Student Login</button>
+                            <button id="tabRegisterBtn" class="auth-tab-btn">New Registration</button>
+                            <button id="tabForgotBtn" class="auth-tab-btn" style="display:none;">Account Recovery</button>
+                        </div>
+
+                        <!-- LOGIN FORM CONTAINER -->
+                        <div id="loginFormContainer">
+                            <div class="card-header">
+                                <h3><i class="fas fa-sign-in-alt" style="color: var(--primary);"></i> Welcome Back</h3>
+                                <p>Enter your Roll Number and Password to access your dashboard</p>
+                            </div>
+
+                            <form id="studentLoginForm">
+                                <div class="form-group">
+                                    <label for="loginRoll" class="form-label">Roll Number <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-id-card input-icon"></i>
+                                        <input type="text" id="loginRoll" class="form-control" placeholder="e.g. 21CS045" required autocomplete="username">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="loginPassword" class="form-label">Password <span class="req">*</span></label>
+                                    <div class="input-wrapper has-toggle">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="password" id="loginPassword" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+                                        <button type="button" class="pwd-toggle-btn" data-target="loginPassword" aria-label="Toggle password visibility" title="Show/Hide Password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; font-size: 0.85rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-secondary); margin: 0;">
+                                        <input type="checkbox" id="rememberMeCheckbox" checked style="accent-color: var(--primary);"> Keep me signed in
+                                    </label>
+                                    <button type="button" id="forgotPasswordLinkBtn" class="link-btn" style="color: var(--primary); background: none; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">
+                                        Forgot Password?
+                                    </button>
+                                </div>
+
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem;">
+                                    💡 <em>Tip: Demo student <code>21CS045</code> with password <code>123</code> is pre-configured. (Security Ans: <code>Computer Science</code>)</em>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    Log In to Dashboard <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- REGISTRATION FORM CONTAINER -->
+                        <div id="registerFormContainer" style="display: none;">
+                            <div class="card-header">
+                                <h3><i class="fas fa-user-plus" style="color: var(--secondary);"></i> Create Student Account</h3>
+                                <p>Register to start your personalized test history</p>
+                            </div>
+
+                            <form id="studentRegisterForm">
+                                <div class="form-group">
+                                    <label for="regName" class="form-label">Full Name <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" id="regName" class="form-control" placeholder="e.g. Samiksha Sharma" required autocomplete="name">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regRoll" class="form-label">Roll Number / Enrollment No. <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-id-card input-icon"></i>
+                                        <input type="text" id="regRoll" class="form-control" placeholder="e.g. 21AI015" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regEmail" class="form-label">Student Email <span class="opt" style="color:var(--text-muted); font-size:0.8rem;">(For recovery)</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="regEmail" class="form-control" placeholder="e.g. samiksha@college.edu" autocomplete="email">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regBranch" class="form-label">Department / Branch <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-graduation-cap input-icon"></i>
+                                        <select id="regBranch" class="form-control" required>
+                                            <option value="" disabled selected>Select Department</option>
+                                            <option value="AI/ML">AI/ML (Artificial Intelligence & Machine Learning)</option>
+                                            <option value="AI/DS">AI/DS (Artificial Intelligence & Data Science)</option>
+                                            <option value="CSE">CSE (Computer Science & Engineering)</option>
+                                            <option value="ETC">ETC (Electronics & Telecommunication)</option>
+                                            <option value="MECHANICAL">MECHANICAL (Mechanical Engineering)</option>
+                                            <option value="ELECTRICAL">ELECTRICAL (Electrical Engineering)</option>
+                                            <option value="CIVIL">CIVIL (Civil Engineering)</option>
+                                            <option value="IT">IT (Information Technology)</option>
+                                            <option value="EXTC">EXTC (Electronics & Telecommunication Engg)</option>
+                                            <option value="ATC">ATC (Automation / Automobile & Telecomm)</option>
+                                            <option value="OTHER">Others (Specify below)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Custom Department Input (When 'OTHER' is chosen) -->
+                                <div class="form-group" id="customBranchWrapper" style="display: none;">
+                                    <label for="customBranchInput" class="form-label">Specify Your Department <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-edit input-icon"></i>
+                                        <input type="text" id="customBranchInput" class="form-control" placeholder="e.g. Chemical Engineering, Robotics, etc.">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regSecurityQuestion" class="form-label">Security Recovery Question <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-shield-alt input-icon"></i>
+                                        <select id="regSecurityQuestion" class="form-control" required>
+                                            <option value="What is your favorite subject?" selected>What is your favorite subject?</option>
+                                            <option value="What was the name of your first school?">What was the name of your first school?</option>
+                                            <option value="What is your birthplace city?">What is your birthplace city?</option>
+                                            <option value="What is your favorite programming language?">What is your favorite programming language?</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regSecurityAnswer" class="form-label">Security Answer <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-key input-icon"></i>
+                                        <input type="text" id="regSecurityAnswer" class="form-control" placeholder="e.g. Computer Science" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regPassword" class="form-label">Password <span class="req">*</span></label>
+                                    <div class="input-wrapper has-toggle">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="password" id="regPassword" class="form-control" placeholder="Create password (min 3 chars)" required autocomplete="new-password">
+                                        <button type="button" class="pwd-toggle-btn" data-target="regPassword" aria-label="Toggle password visibility" title="Show/Hide Password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="regConfirmPassword" class="form-label">Confirm Password <span class="req">*</span></label>
+                                    <div class="input-wrapper has-toggle">
+                                        <i class="fas fa-shield-alt input-icon"></i>
+                                        <input type="password" id="regConfirmPassword" class="form-control" placeholder="Confirm password" required autocomplete="new-password">
+                                        <button type="button" class="pwd-toggle-btn" data-target="regConfirmPassword" aria-label="Toggle password visibility" title="Show/Hide Password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-full" style="margin-top: 1rem;">
+                                    Register & Proceed <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- FORGOT PASSWORD / ACCOUNT RECOVERY CONTAINER -->
+                        <div id="forgotFormContainer" style="display: none;">
+                            <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <h3><i class="fas fa-key" style="color: var(--warning);"></i> Account Recovery</h3>
+                                    <p>Reset your student password in 3 easy steps</p>
+                                </div>
+                                <button type="button" id="backToLoginFromForgotBtn" class="btn btn-secondary btn-sm" style="font-size:0.8rem; padding: 0.35rem 0.75rem;">
+                                    <i class="fas fa-arrow-left"></i> Login
+                                </button>
+                            </div>
+
+                            <!-- Recovery Step Indicator -->
+                            <div class="recovery-steps-indicator">
+                                <div class="rec-step active" id="recStepPill1">1. Find</div>
+                                <div class="rec-step" id="recStepPill2">2. Verify</div>
+                                <div class="rec-step" id="recStepPill3">3. Reset</div>
+                            </div>
+
+                            <!-- Step 1: Find Account by Roll No -->
+                            <form id="forgotStep1Form" class="forgot-step-form">
+                                <div class="form-group">
+                                    <label for="forgotRoll" class="form-label">Enter Roll Number <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-id-card input-icon"></i>
+                                        <input type="text" id="forgotRoll" class="form-control" placeholder="e.g. 21CS045" required autocomplete="username">
+                                    </div>
+                                    <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">Enter your registered roll number or enrollment ID.</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    Find Account <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+
+                            <!-- Step 2: Answer Security Question -->
+                            <form id="forgotStep2Form" class="forgot-step-form" style="display: none;">
+                                <div class="account-identity-box">
+                                    <div class="student-avatar" style="width:36px; height:36px; font-size:0.95rem;"><i class="fas fa-user-check"></i></div>
+                                    <div>
+                                        <strong id="forgotCandidateName">Samiksha Sharma</strong>
+                                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0;" id="forgotCandidateMeta">21CS045 • CSE</p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Security Question:</label>
+                                    <div class="security-question-display" id="forgotSecurityQuestionDisplay">
+                                        What is your favorite subject?
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="forgotSecurityAnswer" class="form-label">Your Security Answer <span class="req">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-shield-alt input-icon"></i>
+                                        <input type="text" id="forgotSecurityAnswer" class="form-control" placeholder="Enter security answer" required>
+                                    </div>
+                                    <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">💡 Demo student answer: <code>Computer Science</code></small>
+                                </div>
+
+                                <div style="display: flex; gap: 0.75rem;">
+                                    <button type="button" id="forgotBackToStep1Btn" class="btn btn-secondary" style="flex:1;">
+                                        <i class="fas fa-chevron-left"></i> Back
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" style="flex:2;">
+                                        Verify Answer <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Step 3: Set New Password -->
+                            <form id="forgotStep3Form" class="forgot-step-form" style="display: none;">
+                                <div class="form-group">
+                                    <label for="forgotNewPassword" class="form-label">New Password <span class="req">*</span></label>
+                                    <div class="input-wrapper has-toggle">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="password" id="forgotNewPassword" class="form-control" placeholder="Minimum 3 characters" required autocomplete="new-password">
+                                        <button type="button" class="pwd-toggle-btn" data-target="forgotNewPassword" aria-label="Toggle password visibility"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="forgotConfirmPassword" class="form-label">Confirm New Password <span class="req">*</span></label>
+                                    <div class="input-wrapper has-toggle">
+                                        <i class="fas fa-shield-alt input-icon"></i>
+                                        <input type="password" id="forgotConfirmPassword" class="form-control" placeholder="Re-enter new password" required autocomplete="new-password">
+                                        <button type="button" class="pwd-toggle-btn" data-target="forgotConfirmPassword" aria-label="Toggle password visibility"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    Update Password & Log In <i class="fas fa-save"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 2: STUDENT DASHBOARD & ATTEMPT HISTORY
+             =================================================================== -->
+        <section id="dashboardView" class="view-section">
+            <div class="dashboard-hero">
+                <div class="student-meta-box">
+                    <div class="student-avatar">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="student-details">
+                        <h3 id="dashStudentName">Candidate Name</h3>
+                        <p><span id="dashStudentRoll">Roll No</span> • Department of <strong id="dashStudentBranch" style="color:var(--primary);">Branch</strong></p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                    <button id="dashStartTestBtn" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start New Aptitude Test
+                    </button>
+                    <button id="accountSettingsBtn" class="btn btn-secondary" title="Account Security & Settings">
+                        <i class="fas fa-user-shield"></i> Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student Summary Stats -->
+            <div class="dash-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(16,185,129,0.15); color: var(--success);"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-details">
+                        <h5>Personal Best</h5>
+                        <h3 id="dashBestScore">N/A</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(6,182,212,0.15); color: var(--secondary);"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-details">
+                        <h5>Average Score</h5>
+                        <h3 id="dashAvgScore">N/A</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(168,85,247,0.15); color: var(--purple);"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-details">
+                        <h5>Last Attempt</h5>
+                        <h3 id="dashLastAttemptDate" style="font-size:1.1rem; font-weight:600;">Never</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attempt History Table -->
+            <div class="glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3><i class="fas fa-list-check" style="color: var(--secondary);"></i> Test History & Score Progression</h3>
+                        <p>Click any test row or <strong>"Full Report"</strong> to inspect complete question details, choices, and solutions</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="leaderboard-table history-table">
+                        <thead>
+                            <tr>
+                                <th>Attempt</th>
+                                <th>Score (/20)</th>
+                                <th>Percentage</th>
+                                <th>Grade</th>
+                                <th>Time Taken</th>
+                                <th>Date & Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashHistoryTableBody">
+                            <!-- Injected dynamically by app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 3: TEST INSTRUCTIONS & BRIEFING SCREEN
+             =================================================================== -->
+        <section id="instructionView" class="view-section">
+            <div class="instructions-box">
+                <div class="glass-card">
+                    <div class="card-header" style="text-align: center;">
+                        <span class="badge" style="margin-bottom: 0.5rem; display: inline-block;">Assessment Briefing</span>
+                        <h2>Aptitude Assessment Guidelines</h2>
+                        <p>Please review the rules before commencing your examination session.</p>
+                    </div>
+
+                    <!-- Candidate Summary Strip -->
+                    <div style="background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.5rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div><small style="color:var(--text-muted);">Candidate Name:</small><br><strong id="summaryCandidateName">-</strong></div>
+                        <div><small style="color:var(--text-muted);">Roll Number:</small><br><strong id="summaryCandidateRoll">-</strong></div>
+                        <div><small style="color:var(--text-muted);">Department:</small><br><strong id="summaryCandidateBranch">-</strong></div>
+                    </div>
+
+                    <div class="instruction-grid">
+                        <div class="info-card">
+                            <div class="info-icon" style="color: #38bdf8;"><i class="fas fa-list-ol"></i></div>
+                            <div class="info-content">
+                                <h4>20 Randomized MCQs</h4>
+                                <p>Quantitative Aptitude, Logical Reasoning & Verbal Ability</p>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-icon" style="color: #fbbf24;"><i class="fas fa-stopwatch"></i></div>
+                            <div class="info-content">
+                                <h4>20 Minutes</h4>
+                                <p>Countdown begins immediately upon starting</p>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-icon" style="color: #10b981;"><i class="fas fa-check-double"></i></div>
+                            <div class="info-content">
+                                <h4>Marking Scheme</h4>
+                                <p>+1 mark per correct answer, 0 for incorrect/unanswered</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="rules-list">
+                        <li><strong>Navigation:</strong> Use the question palette on the right to jump to any question directly.</li>
+                        <li><strong>Review System:</strong> Mark questions for review to easily revisit before submitting.</li>
+                        <li><strong>Score Comparison:</strong> After completion, your score will be instantly evaluated and compared against your previous attempts!</li>
+                        <li><strong>Integrity:</strong> Switching tabs or minimizing the browser will log a proctoring violation.</li>
+                    </ul>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button id="backToDashBtn" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </button>
+                        <button id="startTestBtn" class="btn btn-primary">
+                            I Am Ready – Start Test <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 4: LIVE TEST ARENA / EXAM INTERFACE
+             =================================================================== -->
+        <section id="testView" class="view-section">
+            <div class="test-top-bar">
+                <div class="candidate-badge">
+                    <div class="candidate-avatar">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="candidate-meta">
+                        <h4 id="headerCandidateName">Candidate</h4>
+                        <p id="headerCandidateMeta">Roll No • Branch</p>
+                    </div>
+                </div>
+
+                <div id="timerPill" class="timer-pill">
+                    <i class="fas fa-clock" style="color: #38bdf8;"></i>
+                    <span id="timerClock" class="timer-clock">20:00</span>
+                    <div class="timer-progress-track">
+                        <div id="timerProgressBar" class="timer-progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-layout">
+                <!-- Left: Question Section -->
+                <div class="question-container">
+                    <div class="section-tabs">
+                        <button class="sec-tab active" data-cat="ALL">All Sections (20)</button>
+                        <button class="sec-tab" data-cat="Quantitative Aptitude">📊 Quantitative</button>
+                        <button class="sec-tab" data-cat="Logical Reasoning">🧠 Logical Reasoning</button>
+                        <button class="sec-tab" data-cat="Verbal Ability">📖 Verbal Ability</button>
+                    </div>
+
+                    <div class="question-header">
+                        <div id="questionIndexBadge" class="question-number-badge">Question 1 of 20</div>
+                        <div id="questionCategoryBadge" class="category-tag">Quantitative Aptitude</div>
+                    </div>
+
+                    <div id="questionText" class="question-text">
+                        Loading question content...
+                    </div>
+
+                    <div id="optionsContainer" class="options-list"></div>
+
+                    <div class="question-actions">
+                        <div class="left-actions">
+                            <button id="clearBtn" class="btn btn-secondary" title="Clear selection">
+                                <i class="fas fa-eraser"></i> Clear
+                            </button>
+                            <button id="markReviewBtn" class="btn btn-secondary" title="Mark for review">
+                                <i class="far fa-bookmark"></i> Mark for Review
+                            </button>
+                        </div>
+
+                        <div class="right-actions">
+                            <button id="prevBtn" class="btn btn-secondary">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>
+                            <button id="nextBtn" class="btn btn-primary">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="keyboard-tips">
+                        <span>Shortcuts: <span class="kbd">A</span><span class="kbd">B</span><span class="kbd">C</span><span class="kbd">D</span> Select | <span class="kbd">N</span> Next | <span class="kbd">P</span> Prev | <span class="kbd">M</span> Mark</span>
+                    </div>
+                </div>
+
+                <!-- Right: Palette -->
+                <div class="palette-container">
+                    <div class="palette-title">
+                        <span>Question Palette</span>
+                        <span id="paletteAnsweredCount" class="count-badge">0 / 20 Solved</span>
+                    </div>
+
+                    <div id="paletteGrid" class="palette-grid"></div>
+
+                    <div class="palette-legend">
+                        <div class="legend-item"><span class="legend-dot answered"></span> Answered</div>
+                        <div class="legend-item"><span class="legend-dot marked"></span> Marked</div>
+                        <div class="legend-item"><span class="legend-dot unanswered"></span> Unanswered</div>
+                        <div class="legend-item"><span class="legend-dot not-visited"></span> Not Visited</div>
+                    </div>
+
+                    <div class="palette-submit-box">
+                        <button id="paletteSubmitBtn" class="btn btn-accent btn-full" title="Submit exam and view your evaluation">
+                            <i class="fas fa-check-circle"></i> Complete & Submit Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 5: RESULTS DASHBOARD & SCORE COMPARISON
+             =================================================================== -->
+        <section id="resultView" class="view-section">
+            <!-- Score Comparison Banner -->
+            <div id="scoreComparisonBox"></div>
+
+            <!-- Hero Result Card -->
+            <div class="result-hero-card">
+                <div class="result-hero-info">
+                    <span class="badge" style="margin-bottom: 0.5rem; display: inline-block;">Official Scorecard</span>
+                    <h2>Assessment Completed, <span id="resultStudentName" class="gradient-text">Candidate</span>!</h2>
+                    <p>Your performance breakdown across Quantitative, Logical, and Verbal modules has been evaluated.</p>
+                </div>
+
+                <div class="score-gauge-box">
+                    <svg viewBox="0 0 100 100" class="circular-chart">
+                        <defs>
+                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" />
+                                <stop offset="50%" stop-color="#6366f1" />
+                                <stop offset="100%" stop-color="#a855f7" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="circle-bg" cx="50" cy="50" r="45" />
+                        <circle id="resultCircleProgress" class="circle-progress" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283" />
+                    </svg>
+
+                    <div class="score-gauge-details">
+                        <div class="score-number"><span id="resScoreNum">0</span><span id="resScoreTotal" class="score-max">/ 20</span></div>
+                        <p id="resPercentageText" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600;">0% Overall</p>
+                        <div id="resGradeBadge" class="badge-grade distinction">Distinction</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Matrix -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper correct"><i class="fas fa-check"></i></div>
+                    <div class="stat-details">
+                        <h5>Correct</h5>
+                        <h3 id="statCorrectCount">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper wrong"><i class="fas fa-times"></i></div>
+                    <div class="stat-details">
+                        <h5>Incorrect</h5>
+                        <h3 id="statWrongCount">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper unattempted"><i class="fas fa-minus"></i></div>
+                    <div class="stat-details">
+                        <h5>Unattempted</h5>
+                        <h3 id="statUnattemptedCount">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper accuracy"><i class="fas fa-bullseye"></i></div>
+                    <div class="stat-details">
+                        <h5>Accuracy</h5>
+                        <h3 id="statAccuracyRate">0%</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper time"><i class="fas fa-stopwatch"></i></div>
+                    <div class="stat-details">
+                        <h5>Time Taken</h5>
+                        <h3 id="statTimeTaken">0m 00s</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(251,191,36,0.15); color: #fbbf24;"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-details">
+                        <h5>Leaderboard</h5>
+                        <h3 id="statLeaderboardRank">#1</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Performance & Radar Analytics -->
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h4><i class="fas fa-chart-bar" style="color: var(--secondary);"></i> Sectional Mastery</h4>
+
+                    <div class="category-bar-item">
+                        <div class="cat-info">
+                            <span>Quantitative Aptitude</span>
+                            <span id="catQuantScore">0/7 (0%)</span>
+                        </div>
+                        <div class="cat-track">
+                            <div id="catQuantFill" class="cat-fill quant" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="category-bar-item">
+                        <div class="cat-info">
+                            <span>Logical Reasoning</span>
+                            <span id="catLogicScore">0/7 (0%)</span>
+                        </div>
+                        <div class="cat-track">
+                            <div id="catLogicFill" class="cat-fill logic" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="category-bar-item">
+                        <div class="cat-info">
+                            <span>Verbal Ability</span>
+                            <span id="catVerbalScore">0/6 (0%)</span>
+                        </div>
+                        <div class="cat-track">
+                            <div id="catVerbalFill" class="cat-fill verbal" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h4><i class="fas fa-chart-pie" style="color: var(--purple);"></i> Competency Radar</h4>
+                    <div class="radar-wrapper">
+                        <canvas id="performanceCanvas" width="300" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="result-actions">
+                <button id="viewCertificateBtn" class="btn btn-primary">
+                    <i class="fas fa-award"></i> View & Print Certificate
+                </button>
+                <button id="reviewAnswersBtn" class="btn btn-secondary">
+                    <i class="fas fa-book-open"></i> Review Questions & Answers
+                </button>
+                <button id="leaderboardBtn" class="btn btn-accent">
+                    <i class="fas fa-trophy"></i> Leaderboard
+                </button>
+                <button id="retakeTestBtn" class="btn btn-warning">
+                    <i class="fas fa-redo"></i> Retake Test
+                </button>
+                <button id="backToDashboardFromResultBtn" class="btn btn-secondary">
+                    <i class="fas fa-tachometer-alt"></i> My Dashboard
+                </button>
+            </div>
+        </section>
+
+        <!-- ===================================================================
+             VIEW 6: VISIBLE & PRINTABLE CERTIFICATE OF ACHIEVEMENT
+             =================================================================== -->
+        <section id="certificateView" class="view-section">
+            <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;" class="no-print">
+                <button id="certBackBtn" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+                <button id="printCertBtn" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print / Save as PDF
+                </button>
+            </div>
+
+            <div class="certificate-card" id="certificateCard">
+                <div class="cert-header">
+                    <div class="cert-org">Department Assessment Council</div>
+                    <div class="cert-title">Certificate of Achievement</div>
+                </div>
+
+                <div class="cert-body">
+                    <p class="cert-intro">This is to proudly certify that</p>
+                    <div id="certStudentName" class="cert-student-name">Samiksha Sharma</div>
+                    <div id="certStudentMeta" class="cert-student-meta">Roll No: 21CS045 • Department of CSE</div>
+
+                    <p class="cert-message">
+                        has successfully completed the Comprehensive Aptitude Assessment (JTM-17) demonstrating commendable analytical acumen, logical rigor, and verbal competency.
+                    </p>
+
+                    <div class="cert-score-badge">
+                        <div class="cert-score-item">Score: <strong id="certScore">18/20</strong></div>
+                        <div class="cert-score-item">Percentage: <strong id="certPercentage">90%</strong></div>
+                        <div class="cert-score-item">Grade: <strong id="certGrade">Distinction</strong></div>
+                    </div>
+                </div>
+
+                <div class="cert-footer">
+                    <div style="text-align: left;">
+                        <small style="color:#64748b; font-size:0.8rem;">Date of Examination</small><br>
+                        <strong id="certDate" style="color:#0f172a; font-size:0.95rem;">August 20, 2026</strong>
+                    </div>
+
+                    <div class="cert-seal">
+                        <span>VERIFIED<br>JTM-17</span>
+                    </div>
+
+                    <div class="cert-signature">
+                        <div class="cert-sig-line"></div>
+                        <div class="cert-sig-title">Head of Examination Committee</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===================================================================
+         MODAL 1: COMPETITION LEADERBOARD
+         =================================================================== -->
+    <div id="leaderboardModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fas fa-trophy" style="color: #fbbf24;"></i> Hall of Fame – Leaderboard</h3>
+                <button class="icon-btn modal-close-btn" aria-label="Close modal"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="leaderboard-controls">
+                    <div class="search-input-box">
+                        <i class="fas fa-search input-icon" style="top: 10px;"></i>
+                        <input type="text" id="leaderboardSearch" placeholder="Search by student name or roll...">
+                    </div>
+
+                    <div class="input-wrapper" style="min-width: 220px;">
+                        <select id="leaderboardBranchFilter" class="form-control" style="padding-left: 1rem;">
+                            <option value="ALL">All Departments</option>
+                            <option value="AI/ML">AI/ML</option>
+                            <option value="AI/DS">AI/DS</option>
+                            <option value="CSE">CSE</option>
+                            <option value="ETC">ETC</option>
+                            <option value="MECHANICAL">MECHANICAL</option>
+                            <option value="ELECTRICAL">ELECTRICAL</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="IT">IT</option>
+                            <option value="EXTC">EXTC</option>
+                            <option value="ATC">ATC</option>
+                            <option value="OTHER">Others</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Candidate</th>
+                                <th>Roll No</th>
+                                <th>Branch</th>
+                                <th>Score</th>
+                                <th>%</th>
+                                <th>Time Taken</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button id="resetLeaderboardBtn" class="btn btn-outline-danger btn-sm" style="font-size:0.8rem; padding: 0.5rem 1rem;">
+                    <i class="fas fa-history"></i> Reset to Sample Data
+                </button>
+                <button class="btn btn-secondary modal-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MODAL 2: CURRENT TEST REVIEW QUESTIONS MODAL
+         =================================================================== -->
+    <div id="reviewModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fas fa-book-reader" style="color: var(--secondary);"></i> Step-by-Step Question Review</h3>
+                <button class="icon-btn modal-close-btn" aria-label="Close modal"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-body" id="reviewModalList"></div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary modal-close-btn">Done Reviewing</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MODAL 3: PAST ATTEMPT DETAILED REPORT MODAL
+         =================================================================== -->
+    <div id="attemptDetailsModal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 900px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="attModalTitle"><i class="fas fa-clipboard-check" style="color: var(--primary);"></i> Full Test Report</h3>
+                    <p id="attModalDate" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">Taken on Date</p>
+                </div>
+                <button class="icon-btn modal-close-btn" aria-label="Close modal"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Attempt Hero Summary -->
+                <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper" style="background: rgba(99,102,241,0.15); color: var(--primary);"><i class="fas fa-star"></i></div>
+                        <div class="stat-details">
+                            <h5>Score</h5>
+                            <h3 id="attModalScore">0/20</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper" style="background: rgba(16,185,129,0.15); color: var(--success);"><i class="fas fa-percent"></i></div>
+                        <div class="stat-details">
+                            <h5>Percentage</h5>
+                            <h3 id="attModalPercentage">0%</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper" style="background: rgba(245,158,11,0.15); color: var(--warning);"><i class="fas fa-award"></i></div>
+                        <div class="stat-details">
+                            <h5>Grade</h5>
+                            <h3 id="attModalGrade" style="font-size:1.1rem; font-weight:700;">Merit</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper" style="background: rgba(6,182,212,0.15); color: var(--secondary);"><i class="fas fa-stopwatch"></i></div>
+                        <div class="stat-details">
+                            <h5>Time Taken</h5>
+                            <h3 id="attModalTime">0m 00s</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="chart-card" style="margin-bottom: 1.5rem;">
+                    <h4><i class="fas fa-chart-bar" style="color: var(--secondary);"></i> Sectional Performance</h4>
+
+                    <div class="category-bar-item">
+                        <div class="cat-info">
+                            <span>Quantitative Aptitude</span>
+                            <span id="attModalQuantScore">0/7 (0%)</span>
+                        </div>
+                        <div class="cat-track">
+                            <div id="attModalQuantFill" class="cat-fill quant" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="category-bar-item">
+                        <div class="cat-info">
+                            <span>Logical Reasoning</span>
+                            <span id="attModalLogicScore">0/7 (0%)</span>
+                        </div>
+                        <div class="cat-track">
+                            <div id="attModalLogicFill" class="cat-fill logic" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="category-bar-item">
+                        <div class="cat-info">
+                            <span>Verbal Ability</span>
+                            <span id="attModalVerbalScore">0/6 (0%)</span>
+                        </div>
+                        <div class="cat-track">
+                            <div id="attModalVerbalFill" class="cat-fill verbal" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions & Solutions -->
+                <h4 style="font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-list-ol" style="color: var(--primary);"></i> Questions, Answers & Explanations
+                </h4>
+                <div id="attModalQuestionsList"></div>
+            </div>
+
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button id="attModalCertBtn" class="btn btn-primary">
+                    <i class="fas fa-certificate"></i> View Certificate for This Attempt
+                </button>
+                <button class="btn btn-secondary modal-close-btn">Close Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MODAL 4: PROCTORING INTEGRITY WARNING MODAL
+         =================================================================== -->
+    <div id="proctorModal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 480px;">
+            <div class="modal-body proctor-alert-box">
+                <div class="proctor-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Tab Switch Detected!</h3>
+                <p>
+                    You have navigated away from the exam tab. Tab switching is logged for evaluation integrity.
+                    <br><br>
+                    <strong>Violation Count: <span id="tabSwitchCount" style="color:#ef4444; font-size:1.2rem;">1</span> / 3</strong>
+                </p>
+                <button id="proctorAcknowledgeBtn" class="btn btn-primary btn-full">
+                    I Understand – Return to Test
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MODAL 5: STUDENT ACCOUNT SETTINGS & PASSWORD CHANGE
+         =================================================================== -->
+    <div id="accountSettingsModal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-shield" style="color: var(--primary);"></i> Account Security & Settings</h3>
+                <button class="icon-btn modal-close-btn" aria-label="Close modal"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Account Summary Box -->
+                <div class="account-identity-box" style="margin-bottom: 1.25rem;">
+                    <div class="student-avatar" style="width:48px; height:48px; font-size:1.2rem;"><i class="fas fa-user-graduate"></i></div>
+                    <div style="flex:1;">
+                        <h4 id="settingsStudentName" style="margin:0; font-size:1.1rem; color:var(--text-primary);">Student Name</h4>
+                        <p style="margin:2px 0 0; color:var(--text-secondary); font-size:0.85rem;" id="settingsStudentMeta">Roll No • Department</p>
+                        <p style="margin:2px 0 0; color:var(--text-muted); font-size:0.75rem;" id="settingsRegisteredDate">Registered: 2026-08-19</p>
+                    </div>
+                </div>
+
+                <div class="card-header" style="padding: 0; margin-bottom: 1rem;">
+                    <h4 style="font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-lock" style="color: var(--secondary);"></i> Update Password
+                    </h4>
+                    <p style="margin: 2px 0 0; font-size: 0.8rem;">Change your login password for secure future test access</p>
+                </div>
+
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="changeCurrentPassword" class="form-label">Current Password <span class="req">*</span></label>
+                        <div class="input-wrapper has-toggle">
+                            <i class="fas fa-key input-icon"></i>
+                            <input type="password" id="changeCurrentPassword" class="form-control" placeholder="Enter current password" required autocomplete="current-password">
+                            <button type="button" class="pwd-toggle-btn" data-target="changeCurrentPassword" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="changeNewPassword" class="form-label">New Password <span class="req">*</span></label>
+                        <div class="input-wrapper has-toggle">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="changeNewPassword" class="form-control" placeholder="Minimum 3 characters" required autocomplete="new-password">
+                            <button type="button" class="pwd-toggle-btn" data-target="changeNewPassword" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="changeConfirmPassword" class="form-label">Confirm New Password <span class="req">*</span></label>
+                        <div class="input-wrapper has-toggle">
+                            <i class="fas fa-shield-alt input-icon"></i>
+                            <input type="password" id="changeConfirmPassword" class="form-control" placeholder="Re-enter new password" required autocomplete="new-password">
+                            <button type="button" class="pwd-toggle-btn" data-target="changeConfirmPassword" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Save New Password <i class="fas fa-check"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/questions.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/sound.js"></script>
+    <script src="js/leaderboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "aptitude-test-software",
+  "version": "1.0.0",
+  "description": "Aptitude Test Software Mini Project (JIRA Task JTM-17)",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "aptitude-test",
+    "mini-project",
+    "quiz-app",
+    "mcq",
+    "javascript"
+  ],
+  "author": "Samiksha",
+  "license": "MIT"
+}
