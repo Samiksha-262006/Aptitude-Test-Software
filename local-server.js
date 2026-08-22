@@ -16,11 +16,30 @@ const MIME_TYPES = {
     '.ico': 'image/x-icon'
 };
 
+function resolveFilePath(cleanUrl) {
+    const relativeUrl = cleanUrl === '/' ? 'index.html' : cleanUrl.replace(/^\//, '');
+    
+    // Check in public/ directory first
+    const publicPath = path.join(__dirname, 'public', relativeUrl);
+    if (fs.existsSync(publicPath) && !fs.statSync(publicPath).isDirectory()) {
+        return publicPath;
+    }
+
+    // Check in workspace root directory
+    const rootPath = path.join(__dirname, relativeUrl);
+    if (fs.existsSync(rootPath) && !fs.statSync(rootPath).isDirectory()) {
+        return rootPath;
+    }
+
+    // Return public path as default target
+    return publicPath;
+}
+
 function createServer(port) {
     const server = http.createServer((req, res) => {
         // Strip query string and decode URI
         const cleanUrl = decodeURIComponent(req.url.split('?')[0]);
-        let filePath = path.join(__dirname, cleanUrl === '/' ? 'index.html' : cleanUrl);
+        const filePath = resolveFilePath(cleanUrl);
         const ext = path.extname(filePath).toLowerCase();
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
