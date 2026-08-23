@@ -92,15 +92,15 @@
                         <div id="loginFormContainer">
                             <div class="card-header">
                                 <h3><i class="fas fa-sign-in-alt" style="color: var(--primary);"></i> Welcome Back</h3>
-                                <p>Enter your Roll Number and Password to access your dashboard</p>
+                                <p>Enter your Registered Email ID and Password to access your dashboard</p>
                             </div>
 
                             <form id="studentLoginForm">
                                 <div class="form-group">
-                                    <label for="loginRoll" class="form-label">Roll Number <span class="req">*</span></label>
+                                    <label for="loginEmail" class="form-label">Registered Email ID <span class="req">*</span></label>
                                     <div class="input-wrapper">
-                                        <i class="fas fa-id-card input-icon"></i>
-                                        <input type="text" id="loginRoll" class="form-control" placeholder="e.g. 21CS045" required autocomplete="username">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="loginEmail" class="form-control" placeholder="e.g. samiksha26206@gmail.com" required autocomplete="email">
                                     </div>
                                 </div>
 
@@ -125,7 +125,7 @@
                                 </div>
 
                                 <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem;">
-                                    💡 <em>Tip: Demo student <code>21CS045</code> with password <code>123</code> is pre-configured. (Security Ans: <code>Computer Science</code>)</em>
+                                    💡 <em>Tip: Sign in with your registered email and password to view your tests and profile.</em>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary btn-full">
@@ -154,20 +154,15 @@
                                     <label for="regRoll" class="form-label">Roll Number / Enrollment No. <span class="req">*</span></label>
                                     <div class="input-wrapper">
                                         <i class="fas fa-id-card input-icon"></i>
-                                        <input type="text" id="regRoll" class="form-control" placeholder="e.g. 21AI015" required>
+                                        <input type="text" id="regRoll" class="form-control" placeholder="e.g. 128" required>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="regEmail" class="form-label">Student Email <span class="opt" style="color:var(--text-muted); font-size:0.8rem;">(For recovery)</span></label>
+                                    <label for="regEmail" class="form-label">Student Email <span class="req">*</span></label>
                                     <div class="input-wrapper">
                                         <i class="fas fa-envelope input-icon"></i>
-                                        <input type="email"
-       id="regEmail"
-       class="form-control"
-       placeholder="e.g. samiksha@college.edu"
-       autocomplete="email"
-       required>
+                                        <input type="email" id="regEmail" class="form-control" placeholder="e.g. samiksha26206@gmail.com" autocomplete="email" required>
                                     </div>
                                 </div>
 
@@ -226,7 +221,7 @@
                                     <label for="regPassword" class="form-label">Password <span class="req">*</span></label>
                                     <div class="input-wrapper has-toggle">
                                         <i class="fas fa-lock input-icon"></i>
-                                        <input type="password" id="regPassword" class="form-control" placeholder="Create password (min 3 chars)" required autocomplete="new-password">
+                                        <input type="password" id="regPassword" class="form-control" placeholder="Create password (min 6 chars)" required autocomplete="new-password">
                                         <button type="button" class="pwd-toggle-btn" data-target="regPassword" aria-label="Toggle password visibility" title="Show/Hide Password">
                                             <i class="fas fa-eye"></i>
                                         </button>
@@ -263,25 +258,30 @@
                             </div>
 
                             <!-- Recovery Step Indicator -->
-                            <div class="recovery-steps-indicator">
+                            <div class="recovery-steps-indicator" id="recoveryStepsIndicator">
                                 <div class="rec-step active" id="recStepPill1">1. Find</div>
                                 <div class="rec-step" id="recStepPill2">2. Verify</div>
                                 <div class="rec-step" id="recStepPill3">3. Reset</div>
                             </div>
 
-                            <!-- Step 1: Find Account by Roll No -->
+                            <!-- Step 1: Find Account by Registered Email ID -->
                             <form id="forgotStep1Form" class="forgot-step-form">
                                 <div class="form-group">
-                                    <label for="forgotRoll" class="form-label">Enter Roll Number <span class="req">*</span></label>
+                                    <label for="forgotEmail" class="form-label">Registered Email ID <span class="req">*</span></label>
                                     <div class="input-wrapper">
-                                        <i class="fas fa-id-card input-icon"></i>
-                                        <input type="text" id="forgotRoll" class="form-control" placeholder="e.g. 21CS045" required autocomplete="username">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="forgotEmail" class="form-control" placeholder="e.g. samiksha26206@gmail.com" required autocomplete="email">
                                     </div>
-                                    <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">Enter your registered roll number or enrollment ID.</small>
+                                    <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">Enter your registered student email address.</small>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-full">
                                     Find Account <i class="fas fa-search"></i>
                                 </button>
+                                <div style="text-align:center; margin-top:0.85rem;">
+                                    <button type="button" id="directSendEmailLinkBtn" class="link-btn" style="color:var(--primary); background:none; border:none; font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:underline;">
+                                        <i class="fas fa-paper-plane"></i> Or send reset link directly to email
+                                    </button>
+                                </div>
                             </form>
 
                             <!-- Step 2: Answer Security Question -->
@@ -289,8 +289,8 @@
                                 <div class="account-identity-box">
                                     <div class="student-avatar" style="width:36px; height:36px; font-size:0.95rem;"><i class="fas fa-user-check"></i></div>
                                     <div>
-                                        <strong id="forgotCandidateName">Samiksha Sharma</strong>
-                                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0;" id="forgotCandidateMeta">21CS045 • CSE</p>
+                                        <strong id="forgotCandidateName">Candidate Name</strong>
+                                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0;" id="forgotCandidateMeta">Roll No • Department</p>
                                     </div>
                                 </div>
 
@@ -310,12 +310,18 @@
                                     <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">💡 Demo student answer: <code>Computer Science</code></small>
                                 </div>
 
-                                <div style="display: flex; gap: 0.75rem;">
+                                <div style="display: flex; gap: 0.75rem; margin-bottom: 0.85rem;">
                                     <button type="button" id="forgotBackToStep1Btn" class="btn btn-secondary" style="flex:1;">
                                         <i class="fas fa-chevron-left"></i> Back
                                     </button>
                                     <button type="submit" class="btn btn-primary" style="flex:2;">
                                         Verify Answer <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+
+                                <div style="text-align:center; padding-top:0.5rem; border-top: 1px solid var(--border-color);">
+                                    <button type="button" id="forgotSendEmailFromStep2Btn" class="link-btn" style="color:var(--primary); background:none; border:none; font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:underline;">
+                                        <i class="fas fa-envelope"></i> Don't remember answer? Send link on email
                                     </button>
                                 </div>
                             </form>
@@ -326,7 +332,7 @@
                                     <label for="forgotNewPassword" class="form-label">New Password <span class="req">*</span></label>
                                     <div class="input-wrapper has-toggle">
                                         <i class="fas fa-lock input-icon"></i>
-                                        <input type="password" id="forgotNewPassword" class="form-control" placeholder="Minimum 3 characters" required autocomplete="new-password">
+                                        <input type="password" id="forgotNewPassword" class="form-control" placeholder="Minimum 6 characters" required autocomplete="new-password">
                                         <button type="button" class="pwd-toggle-btn" data-target="forgotNewPassword" aria-label="Toggle password visibility"><i class="fas fa-eye"></i></button>
                                     </div>
                                 </div>
@@ -344,6 +350,20 @@
                                     Update Password & Log In <i class="fas fa-save"></i>
                                 </button>
                             </form>
+
+                            <!-- Success / Reset Confirmation Container -->
+                            <div id="forgotSuccessBox" style="display: none; text-align: center; padding: 1.5rem 1rem;">
+                                <div style="width: 54px; height: 54px; margin: 0 auto 1rem; border-radius: 50%; background: rgba(34, 197, 94, 0.15); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                    <i class="fas fa-envelope-open-text"></i>
+                                </div>
+                                <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">Reset Link Sent!</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.25rem;" id="forgotSuccessMessage">
+                                    We have sent a password reset link to your email address. Please check your inbox (and spam folder) to set your new password.
+                                </p>
+                                <button type="button" id="forgotDoneLoginBtn" class="btn btn-primary btn-full">
+                                    Return to Login <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1080,9 +1100,8 @@
 
     <!-- Scripts -->
     <script src="js/questions.js"></script>
-<script src="js/sound.js"></script>
-<script src="js/leaderboard.js"></script>
-
-<script type="module" src="js/app.js"></script>
+    <script src="js/sound.js"></script>
+    <script type="module" src="js/leaderboard.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

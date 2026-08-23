@@ -1,4 +1,5 @@
 import { authManager } from "./auth.js";
+import { leaderboardManager } from "./leaderboard.js";
 
 /**
  * Main Application Controller
@@ -373,11 +374,11 @@ function initAuthListeners() {
             e.preventDefault();
             soundManager.playClick();
 
-            const rollNo = document.getElementById('loginRoll')?.value.trim() || '';
+            const email = document.getElementById('loginEmail')?.value.trim() || document.getElementById('loginRoll')?.value.trim() || '';
             const password = document.getElementById('loginPassword')?.value || '';
 
-            if (!rollNo) {
-                showToast('Please enter your roll number.', 'warning');
+            if (!email) {
+                showToast('Please enter your registered email address.', 'warning');
                 return;
             }
             if (!password) {
@@ -393,7 +394,7 @@ function initAuthListeners() {
             }
 
             try {
-                const result = await authManager.loginStudent(rollNo, password);
+                const result = await authManager.loginStudent(email, password);
 
                 if (!result || !result.success) {
                     showToast(result?.message || 'Login failed. Please check your credentials.', 'error');
@@ -440,16 +441,12 @@ function initAuthListeners() {
 }
 
 /* ==========================================================================
-   FORGOT PASSWORD & ACCOUNT RECOVERY STATE MACHINE
+   FORGOT PASSWORD & ACCOUNT RECOVERY
    ========================================================================== */
-let forgotPasswordState = {
-    rollNo: '',
-    student: null
-};
-
 function initForgotPassword() {
     const forgotLinkBtn = document.getElementById('forgotPasswordLinkBtn');
     const backToLoginBtn = document.getElementById('backToLoginFromForgotBtn');
+    const forgotDoneLoginBtn = document.getElementById('forgotDoneLoginBtn');
     const tabLogin = document.getElementById('tabLoginBtn');
     const tabRegister = document.getElementById('tabRegisterBtn');
     
@@ -460,19 +457,34 @@ function initForgotPassword() {
     const step1Form = document.getElementById('forgotStep1Form');
     const step2Form = document.getElementById('forgotStep2Form');
     const step3Form = document.getElementById('forgotStep3Form');
+    const successBox = document.getElementById('forgotSuccessBox');
+    const successMsg = document.getElementById('forgotSuccessMessage');
 
-    const stepPill1 = document.getElementById('recStepPill1');
-    const stepPill2 = document.getElementById('recStepPill2');
-    const stepPill3 = document.getElementById('recStepPill3');
+    const pill1 = document.getElementById('recStepPill1');
+    const pill2 = document.getElementById('recStepPill2');
+    const pill3 = document.getElementById('recStepPill3');
 
-    const goToStep = (step) => {
+    const directSendEmailBtn = document.getElementById('directSendEmailLinkBtn');
+    const step2SendEmailBtn = document.getElementById('forgotSendEmailFromStep2Btn');
+    const step2BackBtn = document.getElementById('forgotBackToStep1Btn');
+
+    let currentRecoveryEmail = '';
+
+    const setRecoveryStep = (step) => {
         if (step1Form) step1Form.style.display = step === 1 ? 'block' : 'none';
         if (step2Form) step2Form.style.display = step === 2 ? 'block' : 'none';
         if (step3Form) step3Form.style.display = step === 3 ? 'block' : 'none';
+        if (successBox) successBox.style.display = step === 4 ? 'block' : 'none';
 
-        if (stepPill1) stepPill1.className = `rec-step ${step === 1 ? 'active' : (step > 1 ? 'completed' : '')}`;
-        if (stepPill2) stepPill2.className = `rec-step ${step === 2 ? 'active' : (step > 2 ? 'completed' : '')}`;
-        if (stepPill3) stepPill3.className = `rec-step ${step === 3 ? 'active' : ''}`;
+        if (pill1) {
+            pill1.className = 'rec-step' + (step === 1 ? ' active' : (step > 1 ? ' completed' : ''));
+        }
+        if (pill2) {
+            pill2.className = 'rec-step' + (step === 2 ? ' active' : (step > 2 ? ' completed' : ''));
+        }
+        if (pill3) {
+            pill3.className = 'rec-step' + (step === 3 ? ' active' : (step > 3 ? ' completed' : ''));
+        }
     };
 
     const switchToForgot = () => {
@@ -482,7 +494,7 @@ function initForgotPassword() {
         if (formLogin) formLogin.style.display = 'none';
         if (formRegister) formRegister.style.display = 'none';
         if (formForgot) formForgot.style.display = 'block';
-        goToStep(1);
+        setRecoveryStep(1);
     };
 
     const switchToLogin = () => {
@@ -492,94 +504,188 @@ function initForgotPassword() {
         if (formLogin) formLogin.style.display = 'block';
         if (formRegister) formRegister.style.display = 'none';
         if (formForgot) formForgot.style.display = 'none';
+        setRecoveryStep(1);
     };
 
     if (forgotLinkBtn) forgotLinkBtn.addEventListener('click', switchToForgot);
     if (backToLoginBtn) backToLoginBtn.addEventListener('click', switchToLogin);
+    if (forgotDoneLoginBtn) forgotDoneLoginBtn.addEventListener('click', switchToLogin);
 
-    // Step 1: Find Account
+    // ============================================================
+    // STEP 1: FIND ACCOUNT BY EMAIL
+    // ============================================================
     if (step1Form) {
         step1Form.addEventListener('submit', async (e) => {
             e.preventDefault();
             soundManager.playClick();
 
-            const roll = document.getElementById('forgotRoll')?.value.trim() || '';
+            const email = (document.getElementById('forgotEmail')?.value || '').trim().toLowerCase();
+            if (!email) {
+                showToast('Please enter your registered email address.', 'warning');
+                return;
+            }
+
             const submitBtn = step1Form.querySelector('button[type="submit"]');
-            if (submitBtn) submitBtn.disabled = true;
+            const origBtnText = submitBtn?.innerHTML || '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding account...';
+            }
 
             try {
-                const res = await authManager.getSecurityQuestion(roll);
+                const res = await authManager.getSecurityQuestion(email);
+                if (!res.success) {
+                    showToast(res.message || 'No account found with this email.', 'error');
+                    return;
+                }
 
+                currentRecoveryEmail = email;
+
+                const candidateName = document.getElementById('forgotCandidateName');
+                const candidateMeta = document.getElementById('forgotCandidateMeta');
+                const questionDisplay = document.getElementById('forgotSecurityQuestionDisplay');
+
+                if (candidateName) candidateName.textContent = res.name || 'Registered Student';
+                if (candidateMeta) candidateMeta.textContent = `Roll No: ${res.rollNo || 'STUDENT'} • ${res.branch || 'CSE'}`;
+                if (questionDisplay) questionDisplay.textContent = res.securityQuestion || 'What is your favorite subject?';
+
+                const answerInput = document.getElementById('forgotSecurityAnswer');
+                if (answerInput) answerInput.value = '';
+
+                setRecoveryStep(2);
+                showToast('Account found! Please answer your security question.', 'info');
+            } catch (err) {
+                console.error('Account lookup error:', err);
+                showToast('Unable to find account. Please try again.', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnText || 'Find Account <i class="fas fa-search"></i>';
+                }
+            }
+        });
+    }
+
+    // Direct email link from Step 1
+    if (directSendEmailBtn) {
+        directSendEmailBtn.addEventListener('click', async () => {
+            soundManager.playClick();
+            const email = (document.getElementById('forgotEmail')?.value || '').trim().toLowerCase();
+            if (!email) {
+                showToast('Please enter your registered email address above first.', 'warning');
+                return;
+            }
+
+            directSendEmailBtn.disabled = true;
+            try {
+                const res = await authManager.sendPasswordReset(email);
                 if (!res.success) {
                     showToast(res.message, 'error');
                     return;
                 }
 
-                forgotPasswordState.rollNo = res.rollNo;
-                forgotPasswordState.student = res;
+                showToast(res.message, 'success', 6000);
+                setRecoveryStep(4);
+                if (successMsg) {
+                    successMsg.innerHTML = `We have sent a secure password reset link to <strong>${email}</strong>. Please check your inbox (and spam folder) to set your new password, then return here to log in.`;
+                }
 
-                const nameEl = document.getElementById('forgotCandidateName');
-                const metaEl = document.getElementById('forgotCandidateMeta');
-                const questEl = document.getElementById('forgotSecurityQuestionDisplay');
-                const ansInput = document.getElementById('forgotSecurityAnswer');
-
-                if (nameEl) nameEl.textContent = res.name;
-                if (metaEl) metaEl.textContent = `${res.rollNo} • Department of ${res.branch}`;
-                if (questEl) questEl.textContent = res.securityQuestion;
-                if (ansInput) ansInput.value = '';
-
-                showToast(`Account found for ${res.name}. Please verify your security answer.`, 'info');
-                goToStep(2);
+                const loginEmailInput = document.getElementById('loginEmail');
+                if (loginEmailInput) loginEmailInput.value = email;
             } catch (err) {
-                showToast('Unable to find account. Please try again.', 'error');
+                showToast('Unable to send password reset email.', 'error');
             } finally {
-                if (submitBtn) submitBtn.disabled = false;
+                directSendEmailBtn.disabled = false;
             }
         });
     }
 
-    // Step 2: Back to Step 1
-    const backToStep1Btn = document.getElementById('forgotBackToStep1Btn');
-    if (backToStep1Btn) {
-        backToStep1Btn.addEventListener('click', () => {
-            soundManager.playClick();
-            goToStep(1);
-        });
-    }
-
-    // Step 2: Verify Security Answer
+    // ============================================================
+    // STEP 2: VERIFY SECURITY ANSWER
+    // ============================================================
     if (step2Form) {
         step2Form.addEventListener('submit', async (e) => {
             e.preventDefault();
             soundManager.playClick();
 
-            const answer = document.getElementById('forgotSecurityAnswer')?.value.trim() || '';
+            const answer = (document.getElementById('forgotSecurityAnswer')?.value || '').trim();
+            if (!answer) {
+                showToast('Please enter your security answer.', 'warning');
+                return;
+            }
+
             const submitBtn = step2Form.querySelector('button[type="submit"]');
-            if (submitBtn) submitBtn.disabled = true;
+            const origBtnText = submitBtn?.innerHTML || '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            }
 
             try {
-                const verifyRes = await authManager.verifyRecoveryDetails(forgotPasswordState.rollNo, answer);
-
-                if (!verifyRes.success) {
-                    showToast(verifyRes.message, 'error');
+                const res = await authManager.verifyRecoveryDetails(currentRecoveryEmail, answer);
+                if (!res.success) {
+                    showToast(res.message, 'error', 5000);
                     return;
                 }
 
-                showToast('Identity verified! Please set your new password.', 'success');
-                const newPassInput = document.getElementById('forgotNewPassword');
-                const confPassInput = document.getElementById('forgotConfirmPassword');
-                if (newPassInput) newPassInput.value = '';
-                if (confPassInput) confPassInput.value = '';
-                goToStep(3);
+                setRecoveryStep(3);
+                showToast('Answer verified! Please choose your new password.', 'success');
             } catch (err) {
                 showToast('Verification failed. Please try again.', 'error');
             } finally {
-                if (submitBtn) submitBtn.disabled = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnText || 'Verify Answer <i class="fas fa-check"></i>';
+                }
             }
         });
     }
 
-    // Step 3: Update Password
+    // Step 2 Back to Step 1
+    if (step2BackBtn) {
+        step2BackBtn.addEventListener('click', () => {
+            soundManager.playClick();
+            setRecoveryStep(1);
+        });
+    }
+
+    // Step 2 Send Email Link Fallback
+    if (step2SendEmailBtn) {
+        step2SendEmailBtn.addEventListener('click', async () => {
+            soundManager.playClick();
+            if (!currentRecoveryEmail) {
+                showToast('Please enter your email address first.', 'warning');
+                setRecoveryStep(1);
+                return;
+            }
+
+            step2SendEmailBtn.disabled = true;
+            try {
+                const res = await authManager.sendPasswordReset(currentRecoveryEmail);
+                if (!res.success) {
+                    showToast(res.message, 'error');
+                    return;
+                }
+
+                showToast(res.message, 'success', 6000);
+                setRecoveryStep(4);
+                if (successMsg) {
+                    successMsg.innerHTML = `We have sent a secure password reset link to <strong>${currentRecoveryEmail}</strong>. Please check your inbox (and spam folder) to set your new password, then return here to log in.`;
+                }
+
+                const loginEmailInput = document.getElementById('loginEmail');
+                if (loginEmailInput) loginEmailInput.value = currentRecoveryEmail;
+            } catch (err) {
+                showToast('Unable to send password reset email.', 'error');
+            } finally {
+                step2SendEmailBtn.disabled = false;
+            }
+        });
+    }
+
+    // ============================================================
+    // STEP 3: RESET PASSWORD
+    // ============================================================
     if (step3Form) {
         step3Form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -589,37 +695,43 @@ function initForgotPassword() {
             const confirmPass = document.getElementById('forgotConfirmPassword')?.value || '';
 
             if (newPass.length < 6) {
-                showToast('Password must be at least 6 characters.', 'warning');
+                showToast('New password must be at least 6 characters.', 'warning');
                 return;
             }
-
             if (newPass !== confirmPass) {
-                showToast('Passwords do not match. Please re-enter.', 'error');
+                showToast('New password and confirm password do not match.', 'error');
                 return;
             }
 
             const submitBtn = step3Form.querySelector('button[type="submit"]');
-            if (submitBtn) submitBtn.disabled = true;
+            const origBtnText = submitBtn?.innerHTML || '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating password...';
+            }
 
             try {
-                const resetRes = await authManager.resetPassword(forgotPasswordState.rollNo, newPass);
-                if (!resetRes.success) {
-                    showToast(resetRes.message, 'error');
+                const res = await authManager.resetPassword(currentRecoveryEmail, newPass);
+                if (!res.success) {
+                    showToast(res.message || 'Unable to update password.', 'error');
                     return;
                 }
 
-                showToast(resetRes.message, 'success', 5000);
+                showToast(res.message, 'success', 6000);
+                setRecoveryStep(4);
+                if (successMsg) {
+                    successMsg.innerHTML = `Your identity has been verified! A secure password reset link has been dispatched to <strong>${currentRecoveryEmail}</strong> to finalize your new password.`;
+                }
 
-                // Switch to Login and prefill Roll
-                const loginRollInput = document.getElementById('loginRoll');
-                const loginPassInput = document.getElementById('loginPassword');
-                if (loginRollInput) loginRollInput.value = forgotPasswordState.rollNo;
-                if (loginPassInput) loginPassInput.value = '';
-                switchToLogin();
+                const loginEmailInput = document.getElementById('loginEmail');
+                if (loginEmailInput) loginEmailInput.value = currentRecoveryEmail;
             } catch (err) {
                 showToast('Password reset failed. Please try again.', 'error');
             } finally {
-                if (submitBtn) submitBtn.disabled = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnText || 'Update Password & Log In <i class="fas fa-save"></i>';
+                }
             }
         });
     }
@@ -1333,17 +1445,22 @@ async function finishAndEvaluateTest() {
     const comparison = await authManager.getScoreComparison(score, percentage);
 
     // Save full test snapshot (including questions & userAnswers) to Firestore
-    await authManager.saveTestAttempt({
-        score,
-        total: totalQuestions,
-        percentage,
-        accuracy,
-        timeTakenSeconds: timeSpentSeconds,
-        grade,
-        categoryStats,
-        questions: AppState.questions,
-        userAnswers: AppState.userAnswers
-    });
+    try {
+        await authManager.saveTestAttempt({
+            score,
+            total: totalQuestions,
+            percentage,
+            accuracy,
+            timeTakenSeconds: timeSpentSeconds,
+            grade,
+            categoryStats,
+            questions: AppState.questions,
+            userAnswers: AppState.userAnswers
+        });
+    } catch (saveError) {
+        console.error("Test attempt persistence error:", saveError);
+        showToast("⚠️ Could not save attempt to Cloud Firestore: " + (saveError?.message || "Storage error"), "error", 6000);
+    }
 
     // Save into Persistent Leaderboard
     const student = AppState.activeStudent || {

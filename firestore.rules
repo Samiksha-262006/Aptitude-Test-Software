@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Student profile: each authenticated student can create, read, and update only their own profile
+    match /students/{studentId} {
+      allow read, create, update: if request.auth != null
+        && request.auth.uid == studentId;
+
+      allow delete: if false;
+    }
+
+    // Email index for fast lookup of security question without making students collection public
+    // get allows retrieving question only if the exact registered email is known
+    // list is disabled to prevent scanning/scraping
+    match /email_index/{emailDoc} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if request.auth != null;
+      allow delete: if false;
+    }
+
+    // Test attempts: each authenticated student can create and read only their own attempts
+    match /test_attempts/{attemptId} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow update, delete: if false;
+    }
+  }
+}
