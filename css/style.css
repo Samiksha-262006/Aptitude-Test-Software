@@ -1668,8 +1668,12 @@ select.form-control option {
     margin-bottom: 2rem;
     box-shadow: var(--shadow-glow);
     position: relative;
-    flex-wrap: wrap;
     gap: 2rem;
+}
+
+.result-hero-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .result-hero-info h2 {
@@ -1682,13 +1686,14 @@ select.form-control option {
 .result-hero-info p {
     color: var(--text-secondary);
     font-size: 1rem;
-    max-width: 480px;
+    max-width: 540px;
 }
 
 .score-gauge-box {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+    flex-shrink: 0;
 }
 
 .circular-chart {
