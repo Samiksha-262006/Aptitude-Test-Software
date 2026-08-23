@@ -1050,17 +1050,6 @@ function bindTestEventListeners() {
     if (lbSearch) lbSearch.addEventListener('input', renderLeaderboardTable);
     if (lbBranchFilter) lbBranchFilter.addEventListener('change', renderLeaderboardTable);
 
-    const resetLeaderboardBtn = document.getElementById('resetLeaderboardBtn');
-    if (resetLeaderboardBtn) {
-        resetLeaderboardBtn.addEventListener('click', async () => {
-            if (confirm("Reset leaderboard to default competition benchmark scores?")) {
-                await leaderboardManager.resetToDefault();
-                await renderLeaderboardTable();
-                soundManager.playClick();
-            }
-        });
-    }
-
     // Certificate Print & Smart Backtracking Button
     const printCertBtn = document.getElementById('printCertBtn');
     const certBackBtn = document.getElementById('certBackBtn');

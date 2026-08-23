@@ -1,7 +1,8 @@
 /**
  * Shared Firestore Leaderboard Manager
- * Cloud Firestore + Persistent Multi-Student Synchronization
- * Displays EVERY registered student who logs in and takes the test with their personal BEST score.
+ * Cloud Firestore Real-time Synchronization
+ * Loads and displays ONLY genuine registered student records from collection 'leaderboard'.
+ * Stores exactly ONE document per student containing their personal BEST score.
  */
 
 import {
@@ -15,70 +16,7 @@ import {
 
 import { auth, db } from "./firebase-config.js";
 
-const SHARED_LB_LOCAL_KEY = "aptitude_all_students_leaderboard_v1";
-
-const DEFAULT_SAMPLE_LEADERBOARD = [
-    {
-        id: "benchmark_1",
-        userId: "benchmark_1",
-        name: "Aarav Sharma",
-        rollNo: "21CS042",
-        branch: "CSE",
-        score: 19,
-        total: 20,
-        percentage: 95.0,
-        timeTakenSeconds: 742, // 12m 22s
-        date: "2026-08-18 14:30"
-    },
-    {
-        id: "benchmark_2",
-        userId: "benchmark_2",
-        name: "Priya Patel",
-        rollNo: "21IT019",
-        branch: "IT",
-        score: 18,
-        total: 20,
-        percentage: 90.0,
-        timeTakenSeconds: 810, // 13m 30s
-        date: "2026-08-19 11:15"
-    },
-    {
-        id: "benchmark_3",
-        userId: "benchmark_3",
-        name: "Rohan Kulkarni",
-        rollNo: "21AI033",
-        branch: "AI/DS",
-        score: 17,
-        total: 20,
-        percentage: 85.0,
-        timeTakenSeconds: 690, // 11m 30s
-        date: "2026-08-19 16:45"
-    },
-    {
-        id: "benchmark_4",
-        userId: "benchmark_4",
-        name: "Ananya Deshmukh",
-        rollNo: "21EC012",
-        branch: "EXTC",
-        score: 16,
-        total: 20,
-        percentage: 80.0,
-        timeTakenSeconds: 890,
-        date: "2026-08-20 09:20"
-    },
-    {
-        id: "benchmark_5",
-        userId: "benchmark_5",
-        name: "Vikram Singhania",
-        rollNo: "21ME055",
-        branch: "MECHANICAL",
-        score: 15,
-        total: 20,
-        percentage: 75.0,
-        timeTakenSeconds: 940,
-        date: "2026-08-20 10:05"
-    }
-];
+const SHARED_LB_CACHE_KEY = "aptitude_leaderboard_cache_v2";
 
 class LeaderboardManager {
     constructor() {
@@ -86,12 +24,12 @@ class LeaderboardManager {
     }
 
     /**
-     * Get all multi-student local entries
+     * Get cached leaderboard entries
      */
-    getLocalRegistry() {
+    getLocalCache() {
         try {
             if (typeof localStorage === "undefined") return [];
-            const raw = localStorage.getItem(SHARED_LB_LOCAL_KEY);
+            const raw = localStorage.getItem(SHARED_LB_CACHE_KEY);
             return raw ? JSON.parse(raw) : [];
         } catch (e) {
             return [];
@@ -99,64 +37,24 @@ class LeaderboardManager {
     }
 
     /**
-     * Save an entry to the multi-student local registry
+     * Update local cache
      */
-    saveToLocalRegistry(entry) {
+    setLocalCache(entries) {
         try {
             if (typeof localStorage === "undefined") return;
-            const existing = this.getLocalRegistry();
-            const key = String(entry.rollNo || entry.userId || entry.name).trim().toUpperCase();
-
-            const idx = existing.findIndex(e => 
-                String(e.rollNo || e.userId || e.name).trim().toUpperCase() === key
-            );
-
-            if (idx !== -1) {
-                const cur = existing[idx];
-                const isBetter = Number(entry.score || 0) > Number(cur.score || 0) || 
-                    (Number(entry.score || 0) === Number(cur.score || 0) && Number(entry.timeTakenSeconds || 9999) < Number(cur.timeTakenSeconds || 9999));
-                if (isBetter) {
-                    existing[idx] = { ...cur, ...entry };
-                }
-            } else {
-                existing.push(entry);
-            }
-
-            localStorage.setItem(SHARED_LB_LOCAL_KEY, JSON.stringify(existing));
+            localStorage.setItem(SHARED_LB_CACHE_KEY, JSON.stringify(entries));
         } catch (e) {}
     }
 
     /**
-     * Fetch all leaderboard entries from shared Cloud Firestore and local registry.
-     * Guaranteed to display every student who took the test with their personal best score.
+     * Fetch all genuine student leaderboard entries from shared Cloud Firestore.
+     * Returns ONLY real registered student records, each appearing exactly once with their personal best score.
      */
     async getAllEntries() {
         try {
             const studentMap = new Map();
 
-            // 1. Seed benchmark entries first
-            for (const sample of DEFAULT_SAMPLE_LEADERBOARD) {
-                const key = String(sample.rollNo || sample.name).trim().toUpperCase();
-                studentMap.set(key, { ...sample });
-            }
-
-            // 2. Load all local students registry (persists across user logout/login on the same device)
-            const localRegistry = this.getLocalRegistry();
-            for (const student of localRegistry) {
-                const key = String(student.rollNo || student.userId || student.name).trim().toUpperCase();
-                if (!studentMap.has(key)) {
-                    studentMap.set(key, { ...student });
-                } else {
-                    const existing = studentMap.get(key);
-                    const isBetter = Number(student.score || 0) > Number(existing.score || 0) || 
-                        (Number(student.score || 0) === Number(existing.score || 0) && Number(student.timeTakenSeconds || 9999) < Number(existing.timeTakenSeconds || 9999));
-                    if (isBetter || existing.id?.startsWith("benchmark_")) {
-                        studentMap.set(key, { ...student });
-                    }
-                }
-            }
-
-            // 3. Fetch all real student entries from Firestore 'leaderboard' collection
+            // 1. Fetch real student entries from Firestore 'leaderboard' collection
             try {
                 const leaderboardCol = collection(db, "leaderboard");
                 const snapshot = await getDocs(leaderboardCol);
@@ -190,24 +88,22 @@ class LeaderboardManager {
                         date: dateStr || this.formatCurrentDate()
                     };
 
-                    this.saveToLocalRegistry(entry);
-
                     if (!studentMap.has(studentKey)) {
                         studentMap.set(studentKey, entry);
                     } else {
                         const existing = studentMap.get(studentKey);
                         const isBetter = entry.score > existing.score || 
                             (entry.score === existing.score && entry.timeTakenSeconds < existing.timeTakenSeconds);
-                        if (isBetter || existing.id?.startsWith("benchmark_")) {
+                        if (isBetter) {
                             studentMap.set(studentKey, entry);
                         }
                     }
                 });
             } catch (firestoreErr) {
-                console.warn("Firestore leaderboard read notice:", firestoreErr);
+                console.warn("Firestore leaderboard fetch notice:", firestoreErr);
             }
 
-            // 4. Ensure current active student's best score is included if available
+            // 2. Ensure current active student's top attempt is included if available
             try {
                 const activeStudent = (typeof window !== "undefined" && window.authManager?.getActiveStudent?.()) || null;
                 if (activeStudent && typeof window !== "undefined" && window.authManager?.getStudentAttempts) {
@@ -227,7 +123,7 @@ class LeaderboardManager {
                         const activeScore = Number(bestAtt.score || 0);
                         const activeTime = Number(bestAtt.timeTakenSeconds || 0);
 
-                        if (!existing || activeScore > existing.score || (activeScore === existing.score && activeTime < existing.timeTakenSeconds) || existing.id?.startsWith("benchmark_")) {
+                        if (!existing || activeScore > existing.score || (activeScore === existing.score && activeTime < existing.timeTakenSeconds)) {
                             const activeEntry = {
                                 id: activeStudent.uid || ("roll_" + activeStudent.rollNo),
                                 userId: activeStudent.uid,
@@ -241,7 +137,6 @@ class LeaderboardManager {
                                 date: bestAtt.date || this.formatCurrentDate()
                             };
                             studentMap.set(activeKey, activeEntry);
-                            this.saveToLocalRegistry(activeEntry);
 
                             // Background sync to Firestore
                             const docRef = doc(db, "leaderboard", activeStudent.uid || ("roll_" + String(activeStudent.rollNo).toLowerCase()));
@@ -253,7 +148,7 @@ class LeaderboardManager {
                 console.warn("Active student sync notice:", syncErr);
             }
 
-            // 5. Convert to array and sort: Primary by score DESC, Secondary by time ASC
+            // 3. Convert to array and sort: Primary by score DESC, Secondary by time ASC
             const allEntries = Array.from(studentMap.values());
 
             allEntries.sort((a, b) => {
@@ -264,18 +159,20 @@ class LeaderboardManager {
             });
 
             this.cachedEntries = allEntries;
+            this.setLocalCache(allEntries);
             return allEntries;
         } catch (error) {
             console.error("Leaderboard fetch error:", error);
-            if (this.cachedEntries && this.cachedEntries.length > 0) {
-                return this.cachedEntries;
+            const cached = this.getLocalCache();
+            if (cached && cached.length > 0) {
+                return cached;
             }
-            return DEFAULT_SAMPLE_LEADERBOARD;
+            return [];
         }
     }
 
     /**
-     * Save/update a student's test score in shared Cloud Firestore & Local multi-student registry.
+     * Save/update a student's test score in shared Cloud Firestore.
      * Enforces BEST SCORE logic: a worse attempt never overwrites their existing best.
      */
     async saveEntry(entry) {
@@ -332,8 +229,6 @@ class LeaderboardManager {
                     updatedAt: serverTimestamp()
                 };
 
-                this.saveToLocalRegistry(bestEntry);
-
                 try {
                     await setDoc(docRef, bestEntry, { merge: true });
                 } catch (writeErr) {
@@ -343,7 +238,7 @@ class LeaderboardManager {
                 await this.getAllEntries(); // refresh cache
                 return bestEntry;
             } else {
-                const existingEntry = {
+                return {
                     id: docId,
                     userId: docId,
                     name: cleanName || existingData.name,
@@ -355,13 +250,9 @@ class LeaderboardManager {
                     timeTakenSeconds: Number(existingData.timeTakenSeconds || 0),
                     date: existingData.date || currentDateStr
                 };
-
-                this.saveToLocalRegistry(existingEntry);
-                return existingEntry;
             }
         } catch (error) {
             console.error("Firestore Leaderboard save error:", error);
-            this.saveToLocalRegistry(entry);
             return {
                 id: entry.userId || "temp_id",
                 ...entry
@@ -389,31 +280,19 @@ class LeaderboardManager {
     }
 
     /**
-     * Reset leaderboard to default benchmark sample data.
+     * Reset leaderboard cache
      */
     async resetToDefault() {
-        try {
-            if (typeof localStorage !== "undefined") {
-                localStorage.removeItem(SHARED_LB_LOCAL_KEY);
-            }
-            for (const sample of DEFAULT_SAMPLE_LEADERBOARD) {
-                const docRef = doc(db, "leaderboard", sample.id);
-                await setDoc(docRef, {
-                    ...sample,
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
-            }
-            return await this.getAllEntries();
-        } catch (error) {
-            console.warn("Could not seed default benchmarks to Firestore:", error);
-            this.cachedEntries = DEFAULT_SAMPLE_LEADERBOARD;
-            return DEFAULT_SAMPLE_LEADERBOARD;
+        if (typeof localStorage !== "undefined") {
+            localStorage.removeItem(SHARED_LB_CACHE_KEY);
         }
+        this.cachedEntries = [];
+        return await this.getAllEntries();
     }
 
     async clearAll() {
         if (typeof localStorage !== "undefined") {
-            localStorage.removeItem(SHARED_LB_LOCAL_KEY);
+            localStorage.removeItem(SHARED_LB_CACHE_KEY);
         }
         this.cachedEntries = [];
         return [];
