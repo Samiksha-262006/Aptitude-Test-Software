@@ -11,9 +11,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Email index for fast lookup of security question without making students collection public
-    // get allows retrieving question only if the exact registered email is known
-    // list is disabled to prevent scanning/scraping
+    // Email index for security question lookup
     match /email_index/{emailDoc} {
       allow get: if true;
       allow list: if false;
@@ -30,6 +28,14 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
 
       allow update, delete: if false;
+    }
+
+    // Shared Leaderboard: readable by all so competition rankings are shared across devices
+    // Writable by any authenticated student
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null;
+      allow delete: if false;
     }
   }
 }

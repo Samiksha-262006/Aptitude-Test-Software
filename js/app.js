@@ -123,12 +123,16 @@ async function checkExistingSession() {
 function updateNavUserBadge(student) {
     const userBadge = document.getElementById('navUserBadge');
     const userName = document.getElementById('navUserName');
+    const navLeaderboardBtn = document.getElementById('navLeaderboardBtn');
+
     if (userBadge && userName) {
         if (student) {
             userBadge.style.display = 'inline-flex';
             userName.textContent = student.name;
+            if (navLeaderboardBtn) navLeaderboardBtn.style.display = 'inline-flex';
         } else {
             userBadge.style.display = 'none';
+            if (navLeaderboardBtn) navLeaderboardBtn.style.display = 'none';
         }
     }
 }
@@ -1048,10 +1052,10 @@ function bindTestEventListeners() {
 
     const resetLeaderboardBtn = document.getElementById('resetLeaderboardBtn');
     if (resetLeaderboardBtn) {
-        resetLeaderboardBtn.addEventListener('click', () => {
+        resetLeaderboardBtn.addEventListener('click', async () => {
             if (confirm("Reset leaderboard to default competition benchmark scores?")) {
-                leaderboardManager.resetToDefault();
-                renderLeaderboardTable();
+                await leaderboardManager.resetToDefault();
+                await renderLeaderboardTable();
                 soundManager.playClick();
             }
         });
@@ -1462,14 +1466,15 @@ async function finishAndEvaluateTest() {
         showToast("⚠️ Could not save attempt to Cloud Firestore: " + (saveError?.message || "Storage error"), "error", 6000);
     }
 
-    // Save into Persistent Leaderboard
+    // Save into Shared Firestore Leaderboard
     const student = AppState.activeStudent || {
         name: "Student",
         rollNo: "STUDENT",
         branch: "CSE"
     };
 
-    const entry = leaderboardManager.saveEntry({
+    const entry = await leaderboardManager.saveEntry({
+        userId: authManager.getActiveStudent()?.uid || student.uid,
         name: student.name,
         rollNo: student.rollNo,
         branch: student.branch,
@@ -1479,7 +1484,7 @@ async function finishAndEvaluateTest() {
         timeTakenSeconds: timeSpentSeconds
     });
 
-    const userRank = leaderboardManager.getRankForEntry(entry.id);
+    const userRank = await leaderboardManager.getRankForEntry(entry?.id || student.uid || student.rollNo);
 
     // Populate Results Screen
     const resStudentName = document.getElementById('resultStudentName');
@@ -1837,20 +1842,20 @@ function renderQuestionReviewList(container, questions, userAnswers) {
 /* ==========================================================================
    LEADERBOARD MODAL
    ========================================================================== */
-function openLeaderboardModal() {
+async function openLeaderboardModal() {
     soundManager.playClick();
-    renderLeaderboardTable();
     document.getElementById('leaderboardModal').classList.add('active');
+    await renderLeaderboardTable();
 }
 
-function renderLeaderboardTable() {
+async function renderLeaderboardTable() {
     const tableBody = document.getElementById('leaderboardTableBody');
     if (!tableBody) return;
 
     const searchTerm = (document.getElementById('leaderboardSearch')?.value || '').toLowerCase();
     const branchFilter = document.getElementById('leaderboardBranchFilter')?.value || 'ALL';
 
-    const entries = leaderboardManager.getAllEntries();
+    const entries = await leaderboardManager.getAllEntries();
     tableBody.innerHTML = '';
 
     const filtered = entries.filter(entry => {
