@@ -2177,6 +2177,16 @@ canvas#performanceCanvas {
     padding-top: 1rem;
 }
 
+.certificate-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem 0 2rem 0;
+    display: flex;
+    justify-content: center;
+    -webkit-overflow-scrolling: touch;
+}
+
 .certificate-card {
     background: #ffffff !important;
     color: #1e293b !important;
@@ -2186,9 +2196,13 @@ canvas#performanceCanvas {
     text-align: center;
     position: relative;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    width: 100%;
     max-width: 880px;
-    margin: 0 auto 2.5rem auto;
+    min-width: 780px;
+    margin: 0 auto;
     background-image: radial-gradient(circle at center, rgba(99, 102, 241, 0.04) 0%, transparent 70%);
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .cert-header {
@@ -2250,12 +2264,15 @@ canvas#performanceCanvas {
 .cert-score-badge {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 2rem;
     background: #f8fafc;
     border: 2px solid #e2e8f0;
     padding: 0.85rem 2.25rem;
     border-radius: var(--radius-full);
     margin-bottom: 2.5rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .cert-score-item {
@@ -2274,6 +2291,8 @@ canvas#performanceCanvas {
     align-items: flex-end;
     padding-top: 1.5rem;
     border-top: 2px solid #e2e8f0;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 .cert-seal {
@@ -2362,6 +2381,11 @@ canvas#performanceCanvas {
    PRINT MEDIA QUERIES
    ========================================================================== */
 @media print {
+    @page {
+        size: landscape;
+        margin: 10mm;
+    }
+
     body {
         background: #ffffff !important;
         color: #000000 !important;
@@ -2379,19 +2403,45 @@ canvas#performanceCanvas {
     .dashboard-hero,
     .dash-stats-grid,
     .instructions-box,
-    .ambient-glow {
+    .ambient-glow,
+    .toast-container {
         display: none !important;
     }
 
     #certificateView {
         display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .certificate-wrapper {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
     }
 
     .certificate-card {
         box-shadow: none !important;
         border: 8px double #4f46e5 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         max-width: 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .cert-footer {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-end !important;
+    }
+
+    .cert-score-badge {
+        display: inline-flex !important;
+        flex-direction: row !important;
     }
 }
 
@@ -2447,21 +2497,6 @@ canvas#performanceCanvas {
 
     .review-options-grid, .choice-summary-strip {
         grid-template-columns: 1fr;
-    }
-
-    .certificate-card {
-        padding: 2rem 1.5rem;
-    }
-
-    .cert-footer {
-        flex-direction: column;
-        align-items: center;
-        gap: 1.5rem;
-    }
-
-    .cert-score-badge {
-        flex-direction: column;
-        gap: 0.5rem;
     }
 
     .comp-metrics-strip {
